@@ -1,7 +1,7 @@
 Simplistic benchmark to get a grip on how fast or slow it is to check 100k random IPs against
 the roughly 3000 CIDR pattern long bogon list.
 
-Three implementations are compared:
+Four implementations are compared:
 
 * naive java.util.regex.Pattern
    * this loops over all compiled regexes and over all IPs to be checked
