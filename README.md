@@ -4,13 +4,13 @@ the roughly 3000 CIDR pattern long bogon list.
 Three implementations are compared:
 
 * naive java.util.regex.Pattern
- * this loops over all compiled regexes and over all IPs to be checked
- * dead slow
+   * this loops over all compiled regexes and over all IPs to be checked
+   * dead slow
 * one giant java.util.regex.Pattern
- * simply the alternation of all CIDR patterns
- * about an order of magnitude faster
+   * simply the alternation of all CIDR patterns
+   * about an order of magnitude faster
 * one Hyperscan database of all CIDR patterns
- * another order of magnitude faster
+   * another order of magnitude faster
 
 
 On my machine (Dell XPS 9560, i7 2.8GHz, default JVM settings):
