@@ -30,7 +30,7 @@ public class IpSubnetRanges {
   private static final byte[] MASK_IPV6 = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
   // TODO ineffecient
-  private static BigInteger ipToNumeric(String ip) {
+  public static BigInteger ipToNumeric(String ip) {
     final BigInteger mask;
     final byte[] address = InetAddresses.forString(ip).getAddress();
     if (address.length == 4) {

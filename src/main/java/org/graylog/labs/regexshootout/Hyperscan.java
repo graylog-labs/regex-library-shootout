@@ -2,6 +2,7 @@ package org.graylog.labs.regexshootout;
 
 import com.gliwka.hyperscan.wrapper.Database;
 import com.gliwka.hyperscan.wrapper.Expression;
+import com.gliwka.hyperscan.wrapper.ExpressionFlag;
 import com.gliwka.hyperscan.wrapper.Match;
 import com.gliwka.hyperscan.wrapper.Scanner;
 import com.google.common.base.Charsets;
@@ -32,7 +33,29 @@ public class Hyperscan {
   @OperationsPerInvocation(100_000)
   @Warmup(iterations = 5)
   @Measurement(iterations = 5)
-  public void regexMatches(Plan plan, Blackhole blackhole) {
+  public void regexMatchesMulti(PlanMultimatch plan, Blackhole blackhole) {
+    try (Scanner scanner = new Scanner()) {
+      scanner.allocScratch(plan.database);
+      for (String ip : plan.randomIps) {
+        try {
+          final List<Match> matches = scanner.scan(plan.database, ip);
+          blackhole.consume(matches);
+        } catch (Throwable throwable) {
+          throwable.printStackTrace();
+        }
+      }
+    } catch (Throwable e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Fork(value = 1, warmups = 1)
+  @Benchmark
+  @BenchmarkMode(Mode.Throughput)
+  @OperationsPerInvocation(100_000)
+  @Warmup(iterations = 5)
+  @Measurement(iterations = 5)
+  public void regexMatchesSingle(PlanSinglematch plan, Blackhole blackhole) {
     try (Scanner scanner = new Scanner()) {
       scanner.allocScratch(plan.database);
       for (String ip : plan.randomIps) {
@@ -50,7 +73,7 @@ public class Hyperscan {
 
   @SuppressWarnings("UnstableApiUsage")
   @State(Scope.Benchmark)
-  public static class Plan {
+  public abstract static class Plan {
 
     Database database;
     List<String> randomIps;
@@ -74,7 +97,7 @@ public class Hyperscan {
                   if (line.trim().startsWith("#")) {
                     return true;
                   }
-                  regexps.add(new Expression(line, line));
+                  regexps.add(createExpression("^" + line));
                   return true;
                 }
 
@@ -89,6 +112,24 @@ public class Hyperscan {
               });
 
       randomIps = Resources.readLines(Resources.getResource("random-ips.txt"), Charsets.UTF_8);
+    }
+
+    protected abstract Expression createExpression(@Nonnull String line);
+  }
+
+  public static class PlanMultimatch extends Plan {
+
+    @Override
+    protected Expression createExpression(@Nonnull String line) {
+      return new Expression(line, line);
+    }
+  }
+
+  public static class PlanSinglematch extends Plan {
+
+    @Override
+    protected Expression createExpression(@Nonnull String line) {
+      return new Expression(line, ExpressionFlag.SINGLEMATCH, line);
     }
   }
 }

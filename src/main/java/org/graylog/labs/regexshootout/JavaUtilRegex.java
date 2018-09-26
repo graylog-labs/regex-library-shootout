@@ -82,7 +82,7 @@ public class JavaUtilRegex {
                   if (line.trim().startsWith("#")) {
                     return true;
                   }
-                  regexps.add(Pattern.compile(line));
+                  regexps.add(Pattern.compile("^" + line));
                   return true;
                 }
 
@@ -121,7 +121,7 @@ public class JavaUtilRegex {
                               regexps
                                   .build()
                                   .stream()
-                                  .map(pattern -> "(?:" + pattern + ")")
+                                  .map(pattern -> "^(?:" + pattern + ")")
                                   .collect(Collectors.toList())));
                 }
               });
